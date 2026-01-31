@@ -12,7 +12,7 @@ __pycache__/
 *.pth
 *.onnx
 
-
+uploads/
 outputs/
 output_video.mp4
 

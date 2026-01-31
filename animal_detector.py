@@ -22,6 +22,10 @@ class AnimalDetector:
         
         self.confidence_threshold = 0.65
         self.livestock_type = livestock_type
+        self.adaptive_confidence = True
+        self.base_confidence = 0.65
+        self.confidence_range = (0.45, 0.75)
+        self.current_confidence = 0.65
         
         # Animal class mappings (COCO dataset classes)
         self.animal_classes = {
@@ -49,6 +53,29 @@ class AnimalDetector:
         x1, y1, x2, y2 = bbox
         return ((x1 + x2) / 2, (y1 + y2) / 2)
     
+    def adjust_confidence_adaptively(self, frame):
+        """
+        Automatically adjust confidence based on lighting conditions
+        Better detection in poor lighting, fewer false positives in bright conditions
+        """
+        if not self.adaptive_confidence:
+            return self.base_confidence
+        
+        # Calculating frame brightness
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        brightness = np.mean(gray)
+        
+        
+        if brightness < 80:  
+            adjusted = max(self.confidence_range[0], self.base_confidence - 0.15)
+        elif brightness > 180:  
+            adjusted = min(self.confidence_range[1], self.base_confidence + 0.05)
+        else:  
+            adjusted = self.base_confidence
+        
+        self.current_confidence = adjusted  
+        return adjusted
+
     def detect_motion(self, track_id, current_centroid, current_bbox):
         """
         Detect liveness/motion in animals and track stillness duration
@@ -148,7 +175,7 @@ class AnimalDetector:
             frame, 
             persist=True,
             classes=self.get_target_classes(),
-            conf=self.confidence_threshold,
+            conf=self.adjust_confidence_adaptively(frame), 
             verbose=False
         )
         
@@ -372,7 +399,9 @@ class AnimalDetector:
             'alert_message': 'One or more animals showed no signs of life for extended period' if ever_had_stillness_alert else 'All animals showed normal activity',
             'processing_time': processing_time,
             'fps_processed': frame_count / processing_time if processing_time > 0 else 0,
-            'livestock_type': self.livestock_type
+            'livestock_type': self.livestock_type,
+            'adaptive_confidence_used': True, 
+            'avg_confidence': int(self.current_confidence * 100) 
         }
         
         return summary
