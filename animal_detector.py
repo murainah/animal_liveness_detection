@@ -274,6 +274,7 @@ class AnimalDetector:
         summary_text = [
             f"Livestock: {self.livestock_type.upper()}",
             f"Current Animals: {detections['animal_count']}",
+            f"Confidence: {int(self.current_confidence * 100)}",
             f"Alert: {'YES - Animal(s) still too long!' if has_stillness_alert else 'No issues detected'}"
         ]
         
