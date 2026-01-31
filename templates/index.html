@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Motion Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐑 Livestock Liveness Detection (Prototype)</h1>
+            <p>Real-time animal motion detection system developed</p>
+        </header>
+
+        <div class="main-content">
+           
+            <div class="config-section">
+                <h2>Configuration</h2>
+                <div class="form-group">
+                    <label for="livestock-type">Select Livestock Type:</label>
+                    <select id="livestock-type" class="form-control">
+                        <option value="all">All Animals</option>
+                        <option value="sheep">Goat and Sheep</option>
+                        <option value="cattle">Cattle</option>
+                    </select>
+                </div>
+                
+                <div class="info-box">
+                    <p><strong>Liveness Detection:</strong> Detects  ear movements or subtle motion</p>
+                </div>
+            </div>
+
+            
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('upload')">📁 Upload Video</button>
+                <button class="tab-button" onclick="switchTab('camera')">📷 Live Camera</button>
+            </div>
+
+            
+            <div id="upload-tab" class="tab-content active">
+                <div class="upload-section">
+                    <h2>Upload Video for Processing</h2>
+                    <div class="upload-area" id="upload-area">
+                        <input type="file" id="video-input" accept="video/*" hidden>
+                        <div class="upload-icon">📹</div>
+                        <p class="upload-text">Drag and drop video file here or click to browse</p>
+                        <p class="upload-subtext">Supported formats: MP4, AVI, MOV, MKV (Max: 500MB)</p>
+                        <button class="btn btn-primary" onclick="document.getElementById('video-input').click()">
+                            Choose File
+                        </button>
+                    </div>
+                    
+                    <div id="file-info" class="file-info" style="display: none;">
+                        <p><strong>Selected File:</strong> <span id="filename"></span></p>
+                        <p><strong>Size:</strong> <span id="filesize"></span></p>
+                        <button class="btn btn-success" onclick="uploadVideo()">🚀 Start Processing</button>
+                        <button class="btn btn-secondary" onclick="resetUpload()">✕ Cancel</button>
+                    </div>
+
+                    <div id="progress-section" class="progress-section" style="display: none;">
+                        <h3>Processing Video...</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <p id="progress-text">Initializing...</p>
+                    </div>
+
+                    <div id="results-section" class="results-section" style="display: none;">
+                        <h2>Processing Results</h2>
+                        
+                       
+                        <div class="alert-summary" id="alert-summary">
+                            <div class="alert-icon" id="alert-icon"></div>
+                            <div class="alert-content">
+                                <h3 id="alert-title">No Issues Detected</h3>
+                                <p id="alert-message">All animals showed normal activity during video</p>
+                            </div>
+                        </div>
+                        
+                        
+                        <h3 style="margin-top: 30px; margin-bottom: 15px;">Video Statistics</h3>
+                        <div class="results-grid">
+                            <div class="result-card">
+                                <h3>Total Frames</h3>
+                                <p class="result-value" id="total-frames">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h3>Max Animals Visible</h3>
+                                <p class="result-value" id="max-animals">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h3>Frames with Motion</h3>
+                                <p class="result-value" id="motion-frames">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h3>Motion Percentage</h3>
+                                <p class="result-value" id="motion-percentage">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h3>Processing Time</h3>
+                                <p class="result-value" id="processing-time">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h3>Processing FPS</h3>
+                                <p class="result-value" id="processing-fps">-</p>
+                            </div>
+                        </div>
+                        
+                        <div class="download-section">
+                            <button class="btn btn-success btn-large" onclick="downloadVideo()">
+                                ⬇️ Download Processed Video
+                            </button>
+                            <button class="btn btn-secondary" onclick="resetUpload()">
+                                🔄 Process Another Video
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="camera-tab" class="tab-content">
+                <div class="camera-section">
+                    <h2>Live Camera Detection</h2>
+                    
+                    <div class="camera-controls">
+                        <div class="form-group">
+                            <label for="camera-index">Camera Source:</label>
+                            <select id="camera-index" class="form-control">
+                                <option value="0">Default Camera (0)</option>
+                                <option value="1">Camera 1</option>
+                                <option value="2">Camera 2</option>
+                            </select>
+                        </div>
+                        
+                        <button id="start-camera-btn" class="btn btn-success" onclick="startCamera()">
+                            ▶️ Start Camera
+                        </button>
+                        <button id="stop-camera-btn" class="btn btn-danger" onclick="stopCamera()" disabled>
+                            ⏹️ Stop Camera
+                        </button>
+                    </div>
+
+                    <div id="camera-feed-section" style="display: none;">
+                        <div class="camera-view">
+                            <img id="camera-feed" src="" alt="Camera Feed">
+                        </div>
+                        
+                        <div class="live-stats">
+                            <h3>Live Detection Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Animals:</span>
+                                    <span class="stat-value" id="live-total">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Animals Moving:</span>
+                                    <span class="stat-value live-moving" id="live-moving">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Animals Still:</span>
+                                    <span class="stat-value" id="live-still">0</span>
+                                </div>
+                            </div>
+                            
+                            <div id="detection-details" class="detection-details"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Animal Liveness Detection System | Prototype for NeoPasture</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
