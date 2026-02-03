@@ -274,12 +274,12 @@ class AnimalDetector:
         summary_text = [
             f"Livestock: {self.livestock_type.upper()}",
             f"Current Animals: {detections['animal_count']}",
-            f"Confidence: {int(self.current_confidence * 100)}",
+            f"Confidence: {int(self.current_confidence * 100)}%",  
             f"Alert: {'YES - Animal(s) still too long!' if has_stillness_alert else 'No issues detected'}"
         ]
         
         
-        alert_color = (0, 0, 255) if has_stillness_alert else (0, 255, 0)  # Red if alert, green otherwise
+        alert_color = (0, 0, 255) if has_stillness_alert else (0, 255, 0)  
         
         y_offset = 30
         for i, text in enumerate(summary_text):

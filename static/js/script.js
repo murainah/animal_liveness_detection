@@ -186,16 +186,21 @@ function displayResults(result) {
     const alertTitle = document.getElementById('alert-title');
     const alertMessage = document.getElementById('alert-message');
     
-    if (summary.stillness_alert) {
+    // Determine alert level
+    const alertLevel = summary.alert_level || 'normal';
+    
+    if (alertLevel === 'critical') {
         alertSummary.className = 'alert-summary alert';
+        alertIcon.textContent = '🚨';
+        alertTitle.textContent = 'CRITICAL ALERT';
+    } else if (alertLevel === 'warning') {
+        alertSummary.className = 'alert-summary warning';
         alertIcon.textContent = '⚠️';
-        alertTitle.textContent = 'Alert: Animal(s) Still Too Long';
-        alertMessage.textContent = summary.alert_message;
+        alertTitle.textContent = 'WARNING';
     } else {
         alertSummary.className = 'alert-summary success';
         alertIcon.textContent = '✅';
-        alertTitle.textContent = 'No Issues Detected';
-        alertMessage.textContent = summary.alert_message;
+        alertTitle.textContent = 'All Clear';
     }
     
     // Update statistics
